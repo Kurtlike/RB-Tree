@@ -10,6 +10,125 @@ public class RBTree {
         root = createNode(root,elem);
         return true;
     }
+
+    public boolean delete(int elem){
+        Node node = findNode(elem, root);
+
+        return false;
+    }
+    private void chooseNextDeleteMethod(Node node){
+       if(!node.black){
+           if(node.right != null && node.left != null){
+               delete2N(node);
+           }
+           else deleteR0(node);
+       }else{
+           if(node.left != null){
+               if(node.right != null) delete2N(node);
+               else deleteB1(node);
+           }
+           else if( node.right != null)  deleteB1(node);
+           else deleteB0(node);
+       }
+    }
+    private void deleteB1(Node node){
+        if(node.right == null){
+            node.value = node.left.value;
+            chooseNextDeleteMethod(node.left);
+        }else {
+            node.value = node.right.value;
+            chooseNextDeleteMethod(node.right);
+        }
+    }
+    private void delete2N(Node node){
+        Node iter = node.left;
+        while (iter.right != null){
+            iter = iter.right;
+        }
+        node.value = iter.value;
+        iter.value = node.value;
+        chooseNextDeleteMethod(iter);
+    }
+    private void deleteR0(Node node){
+        if(node.parent.value > node.value){
+            node.parent.left = null;
+        }else  node.parent.right = null;
+    }
+    private void deleteB0(Node node){
+        balance(node);
+        node.parent.right = null;
+    }
+    private void balanceB0(Node node){
+        if(!node.parent.black){
+            if(node.parent.left.black){
+                if(node.parent.left.left.black && node.parent.left.right.black){
+                    node.parent.black = true;
+                    node.parent.left.black = false;
+                } else if(!node.parent.left.left.black){
+                    Node sibling = node.parent.left;
+                    node.parent.left = sibling.right;
+                    sibling.right = node.parent;
+                    sibling.parent = node.parent.parent;
+                    node.parent.parent = sibling;
+                    node.parent.black = true;
+                    sibling.black = false;
+                    sibling.left.black = true;
+                    if(sibling.parent.value > sibling.value){
+                        sibling.parent.left = sibling;
+                    } else sibling.parent.right = sibling;
+                }
+            }
+        }else {
+            if(!node.parent.left.black && node.parent.left.right.right.black && node.parent.left.right.left.black){
+                Node sibling = node.parent.left;
+                node.parent.left = sibling.right;
+                node.parent.left.black = false;
+                sibling.right = node.parent;
+                sibling.parent = node.parent.parent;
+                node.parent.parent = sibling;
+                sibling.black = true;
+                if(sibling.parent.value > sibling.value){
+                    sibling.parent.left = sibling;
+                } else sibling.parent.right = sibling;
+            } else if(!node.parent.left.black && !node.parent.left.right.left.black){
+                node.value = node.parent.value;
+                node.parent.value = node.parent.left.right.value;
+                node.left = new Node(node.parent.left.right.right.black, node.parent.left.right.right.value, node);
+                node.parent.left.right.value = node.parent.left.right.left.value;
+                node.parent.left.right.left = null;
+                node.parent.left.right.right = null;
+            } else if(node.parent.left.black && !node.parent.left.right.black){
+                node.value = node.parent.value;
+                node.parent.value = node.parent.left.right.value;
+                node.left = new Node(true, node.parent.left.right.right.value, node);
+                node.parent.left.right.black = true;
+                node.parent.left.right.value = node.parent.left.right.left.value;
+                node.parent.left.right.left = null;
+                node.parent.left.right.right = null;
+
+            } else {
+                node.parent.left.black= false;
+                balance(node.parent);
+            }
+        }
+    }
+
+    private Node findNode(int elem, Node node){
+        if( elem == node.value){
+            return node;
+        }
+        else if(elem > node.value){
+            if(node.right != null){
+                findNode(elem,node.right);
+            }else return null;
+        }
+        else {
+            if(node.left != null){
+                findNode(elem,node.left);
+            }else return null;
+        }
+        return null;
+    }
     private Node createNode(Node motherNode, int elem) {
         if (motherNode.value > elem) {
             if (motherNode.left == null) {
@@ -47,7 +166,7 @@ public class RBTree {
         }
         else if(!parentNode.right.black ){
             if(!parentNode.left.black){
-                swap(parentNode);
+                colorSwap(parentNode);
                 balance(parentNode);
             }else{
                 parentNode = leftFlip(parentNode);
@@ -89,7 +208,7 @@ public class RBTree {
         parentNode.black = true;
         return parentNode;
     }
-    private void swap(Node parentNode){
+    private void colorSwap(Node parentNode){
         parentNode.left.black = true;
         parentNode.right.black = true;
         if(parentNode.parent != null) {
