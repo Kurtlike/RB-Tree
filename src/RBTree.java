@@ -13,9 +13,10 @@ public class RBTree {
 
     public boolean delete(int elem){
         Node node = findNode(elem, root);
-
+        chooseNextDeleteMethod(node);
         return false;
     }
+
     private void chooseNextDeleteMethod(Node node){
        if(!node.black){
            if(node.right != null && node.left != null){
@@ -55,7 +56,7 @@ public class RBTree {
         }else  node.parent.right = null;
     }
     private void deleteB0(Node node){
-        balance(node);
+        balanceB0(node);
         node.parent.right = null;
     }
     private void balanceB0(Node node){
@@ -108,7 +109,7 @@ public class RBTree {
 
             } else {
                 node.parent.left.black= false;
-                balance(node.parent);
+                balanceB0(node.parent);
             }
         }
     }
